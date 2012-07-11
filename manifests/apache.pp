@@ -108,4 +108,8 @@ class cosign::apache(
         cwd         => "${cosign::params::source}/${full_identifier}",
         refreshonly => true,
     }
+
+    apache::module { 'cosign':
+        ensure => present,
+    }
 }
