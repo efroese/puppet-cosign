@@ -19,6 +19,7 @@ class cosign::apache(
     $ca_cert_pem_file){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
+    Class['Apache']         -> Class['Cosign::Apache']
     
     case $::operatingsystem {
         /Redhat|CentOS|Amazon/ : { class { 'cosign::redhat': } }
@@ -34,8 +35,8 @@ class cosign::apache(
     }
 
     file { "${cosign::params::ssl_dir}/full_identifier.key":
-        owner   => $cosign::params::apache_user,
-        group   => $cosign::params::apache_group,
+        owner   => $apache::user,
+        group   => $apache::group,
         mode    => 0660,
         source  => $key_file,
         require => File[$cosign::params::ssl_dir],
@@ -43,15 +44,15 @@ class cosign::apache(
 
     file { "${cosign::params::ssl_dir}/full_identifier.crt":
         owner   => root,
-        group   => $cosign::params::apache_group,
+        group   => $apache::group,
         mode    => 0660,
         source  => $crt_file,
         require => File[$cosign::params::ssl_dir],
     }
 
     file { "${cosign::params::ca_dir}/ca-cert.pem":
-        owner   => $cosign::params::apache_user,
-        group   => $cosign::params::apache_group,
+        owner   => $apache::user,
+        group   => $apache::group,
         mode    => 0644,
         source  => $ca_cert_pem_file,
         require => File[$cosign::params::ca_dir],
@@ -65,21 +66,21 @@ class cosign::apache(
 
     file { '/var/cache/cosign':
         ensure => directory,
-        owner  => $cosign::params::apache_user,
-        group  => $cosign::params::apache_group,
+        owner  => $apache::user,
+        group  => $apache::group,
     }
 
     file { '/var/cache/cosign/filter':
         ensure => directory,
-        owner  => $cosign::params::apache_user,
-        group  => $cosign::params::apache_group,
+        owner  => $apache::user,
+        group  => $apache::group,
         require => File['/var/cache/cosign'],
     }
 
     file { $cosign::params::source:
         ensure => directory,
-        owner  => $cosign::params::apache_user,
-        group  => $cosign::params::apache_group,
+        owner  => $apache::user,
+        group  => $apache::group,
         require => File['/var/cache/cosign'],
     }
 
