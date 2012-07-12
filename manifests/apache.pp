@@ -16,7 +16,8 @@ class cosign::apache(
     $issuance_integer,
     $key_file,
     $crt_file,
-    $ca_cert_pem_file){
+    $ca_cert_pem_file,
+    $vhost_name){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
     Class['Apache']         -> Class['Cosign::Apache']
@@ -27,40 +28,42 @@ class cosign::apache(
     }
     
     $full_identifier = "${domain}=${identifier}-${issuance_integer}"
+    $ca_dir = "${apache::params::conf}/cosign-ca"
+    $ssl_dir = "${apache::params::conf}/cosign-ssl"
 
-    file { [ $cosign::params::ca_dir, $cosign::params::ssl_dir, ]:
+    file { [ $ca_dir, $ssl_dir, ]:
         ensure => directory,
         owner  => root,
         group  => root,
     }
 
-    file { "${cosign::params::ssl_dir}/full_identifier.key":
+    file { "${ssl_dir}/full_identifier.key":
         owner   => $apache::user,
         group   => $apache::group,
         mode    => 0660,
         source  => $key_file,
-        require => File[$cosign::params::ssl_dir],
+        require => File[$ssl_dir],
     }
 
-    file { "${cosign::params::ssl_dir}/full_identifier.crt":
+    file { "${ssl_dir}/full_identifier.crt":
         owner   => root,
         group   => $apache::group,
         mode    => 0660,
         source  => $crt_file,
-        require => File[$cosign::params::ssl_dir],
-    }
+        require => File[$ssl_dir],    }
 
-    file { "${cosign::params::ca_dir}/ca-cert.pem":
+
+    file { "${ca_dir}/ca-cert.pem":
         owner   => $apache::user,
         group   => $apache::group,
         mode    => 0644,
         source  => $ca_cert_pem_file,
-        require => File[$cosign::params::ca_dir],
-        notify  => Exec["c_rehash ${cosign::params::ca_dir}"]
+        require => File[$ca_dir],
+        notify  => Exec["c_rehash ${ca_dir}"]
     }
 
-    exec { "c_rehash ${cosign::params::ca_dir}":
-        command     => "c_rehash ${cosign::params::ca_dir}",
+    exec { "c_rehash ${ca_dir}":
+        command     => "c_rehash ${ca_dir}",
         refreshonly => true,
     }
 
@@ -112,5 +115,37 @@ class cosign::apache(
 
     apache::module { 'cosign':
         ensure => present,
+    }
+
+    apache::conf { 'cosign vhost':
+        ensure => present,
+        path   => "${apache::params::root}/${vhost_name}/conf",
+        configuration => "
+        CosignProtected off
+        CosignHostname weblogin.pennkey.upenn.edu
+        CosignCheckIP never
+        CosignService ${full_identifier}
+        CosignRedirect https://weblogin.pennkey.upenn.edu/login
+        CosignPostErrorRedirect https://weblogin.pennkey.upenn.edu/post_error.html
+        CosignFilterDB /var/cache/cosign/filter
+        CosignCrypto ${ssl_dir}/${full_identifier}.key ${ssl_dir}/${full_identifier}.crt ${ca_dir}
+        "
+    }
+
+    apache::conf { 'cosign location':
+        ensure => present,
+        path   => "${apache::params::root}/${vhost_name}/conf",
+        configuration => "
+        <Location /cosign/valid>
+             SetHandler cosign
+             CosignProtected off
+             Allow from all
+             Satisfy any
+             CosignHostname weblogin.pennkey.upenn.edu
+             CosignCrypto ${ssl_dir}/${full_identifier}.key ${ssl_dir}/${full_identifier}.crt ${ca_dir}
+             CosignValidReference          https://${vhost_name}/.*
+             CosignValidationErrorRedirect http://weblogin.pennkey.upenn.edu/validation_error.html
+        </Location>
+        ",
     }
 }

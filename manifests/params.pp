@@ -1,13 +1,10 @@
 class cosign::params {
 
+    Class['Apache::Params'] -> Class['Cosign::Params']
+
     $apache_modules_dir = $::operatingsystem ? { 
         /RedHat|CentOS|Amazon/ => '/usr/lib64/httpd/modules',
         /Debian|Ubuntu/        => '/usr/lib/apache2/modules',
-    }    
-
-    $ca_dir = $::operatingsystem ? { 
-        /RedHat|CentOS|Amazon/ => '/etc/httpd/cosign-ca',
-        /Debian|Ubuntu/        => '/etc/apache2/cosign-ca',
     }
 
     $ssl_dir = $::operatingsystem ? { 
