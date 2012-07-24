@@ -20,8 +20,9 @@ class cosign::apache(
     $vhost_name){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
-    Class['Apache']         -> Class['Cosign::Apache']
     
+    class { 'cosign::params': }
+
     case $::operatingsystem {
         /Redhat|CentOS|Amazon/ : { class { 'cosign::redhat': } }
         /Debian|Ubuntu/        : { class { 'cosign::debian': } }
@@ -89,18 +90,18 @@ class cosign::apache(
 
     # Extract /var/lib/cosign/domain-string-int.zip -> 
     # /var/lib/cosign/domain-string-int 
-    archive::extract { "${full_identifier}.zip":
+    archive::extract { $full_identifier:
         target     => $cosign::params::source,
         src_target => $cosign::params::source,
-        extension  => 'zip',
+        extension  => 'tgz',
         require    => File[$cosign::params::source],
         notify     => Exec['configure-cosign-module'],
     }
 
     exec { 'configure-cosign-module':
         command     => $::operatingsystem ? {
-            /RedHat|CentOS|Amazon/ => './configure --enable-apache2=/usr/sbin/apxs',
-            /Debian|Ubuntu/        => './configure --enable-apache2=/usr/sbin/apxs2',
+            /RedHat|CentOS|Amazon/ => "${cosign::params::source}/${full_identifier}/configure --enable-apache2=/usr/sbin/apxs",
+            /Debian|Ubuntu/        => "${cosign::params::source}/${full_identifier}/configure --enable-apache2=/usr/sbin/apxs2",
         },
         cwd         => "${cosign::params::source}/${full_identifier}",
         refreshonly => true,
@@ -113,8 +114,17 @@ class cosign::apache(
         refreshonly => true,
     }
 
+    file { "${apache::params::conf}/mods-available/cosign.load":
+	owner   => root,
+	group   => root,
+        mode    => 0644,
+        content => 'LoadModule cosign_module modules/mod_cosign.so',
+    }
+
     apache::module { 'cosign':
-        ensure => present,
+        ensure  => present,
+        require => [ File[ "${apache::params::conf}/mods-available/cosign.load"],
+                     Exec['install-cosign-module'], ],
     }
 
     apache::conf { 'cosign vhost':
