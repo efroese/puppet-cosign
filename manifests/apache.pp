@@ -37,7 +37,7 @@ class cosign::apache(
         group  => root,
     }
 
-    file { "${ssl_dir}/full_identifier.key":
+    file { "${ssl_dir}/${full_identifier}.key":
         owner   => $apache::user,
         group   => $apache::group,
         mode    => 0660,
@@ -45,7 +45,7 @@ class cosign::apache(
         require => File[$ssl_dir],
     }
 
-    file { "${ssl_dir}/full_identifier.crt":
+    file { "${ssl_dir}/${full_identifier}.crt":
         owner   => root,
         group   => $apache::group,
         mode    => 0660,
