@@ -27,9 +27,9 @@ class cosign::apache(
         /Debian|Ubuntu/        : { class { 'cosign::debian': } }
     }
     
-    $full_identifier = "${domain}=${identifier}-${issuance_integer}"
-    $ca_dir = "${apache::params::conf}/cosign-ca"
-    $ssl_dir = "${apache::params::conf}/cosign-ssl"
+    $full_identifier = "${domain}-${identifier}-${issuance_integer}"
+    $ca_dir          = "${apache::params::conf}/cosign-ca"
+    $ssl_dir         = "${apache::params::conf}/cosign-ssl"
 
     file { [ $ca_dir, $ssl_dir, ]:
         ensure => directory,
