@@ -114,16 +114,16 @@ class cosign::apache(
         refreshonly => true,
     }
 
-    file { "${apache::params::conf}/mods-available/cosign.load":
+    file { "${apache::params::conf}/mods-available/zz_cosign.load":
 	owner   => root,
 	group   => root,
         mode    => 0644,
         content => 'LoadModule cosign_module modules/mod_cosign.so',
     }
 
-    apache::module { 'cosign':
+    apache::module { 'zz_cosign':
         ensure  => present,
-        require => [ File[ "${apache::params::conf}/mods-available/cosign.load"],
+        require => [ File[ "${apache::params::conf}/mods-available/zz_cosign.load"],
                      Exec['install-cosign-module'], ],
     }
 
