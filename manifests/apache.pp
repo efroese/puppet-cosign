@@ -34,6 +34,8 @@ class cosign::apache(
     $ca_dir          = "${apache::params::conf}/cosign-ca"
     $ssl_dir         = "${apache::params::conf}/cosign-ssl"
 
+    $valid_reference = regsubst("https://${vhost_name}", '([\/\.])', '\\\1', 'G')
+
     file { [ $ca_dir, $ssl_dir, ]:
         ensure => directory,
         owner  => root,
@@ -129,7 +131,8 @@ class cosign::apache(
                      Exec['install-cosign-module'], ],
     }
 
-    apache::conf { 'cosign vhost':
+    # aaa forces this file to load before the location config
+    apache::conf { 'cosign aaa vhost':
         ensure => present,
         path   => "${apache::params::root}/${vhost_name}/conf",
         configuration => template($vhost_config_template),
