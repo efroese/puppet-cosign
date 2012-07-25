@@ -1,0 +1,8 @@
+CosignProtected off
+CosignHostname weblogin.pennkey.upenn.edu
+CosignCheckIP never
+CosignService <%= full_identifier %>
+CosignRedirect https://weblogin.pennkey.upenn.edu/login
+CosignPostErrorRedirect https://weblogin.pennkey.upenn.edu/post_error.html
+CosignFilterDB /var/cache/cosign/filter
+CosignCrypto <%= ssl_dir %>/<%= full_identifier %>.key <%= ssl_dir %>/<%= full_identifier %>.crt <%= ca_dir %>

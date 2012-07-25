@@ -17,7 +17,9 @@ class cosign::apache(
     $key_file,
     $crt_file,
     $ca_cert_pem_file,
-    $vhost_name){
+    $vhost_name,
+    $vhost_config_template    = 'cosign/vhost_config.erb',
+    $location_config_template = 'cosign/location_config.erb'){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
     
@@ -130,32 +132,12 @@ class cosign::apache(
     apache::conf { 'cosign vhost':
         ensure => present,
         path   => "${apache::params::root}/${vhost_name}/conf",
-        configuration => "
-        CosignProtected off
-        CosignHostname weblogin.pennkey.upenn.edu
-        CosignCheckIP never
-        CosignService ${full_identifier}
-        CosignRedirect https://weblogin.pennkey.upenn.edu/login
-        CosignPostErrorRedirect https://weblogin.pennkey.upenn.edu/post_error.html
-        CosignFilterDB /var/cache/cosign/filter
-        CosignCrypto ${ssl_dir}/${full_identifier}.key ${ssl_dir}/${full_identifier}.crt ${ca_dir}
-        "
+        configuration => template($vhost_config_template),
     }
 
     apache::conf { 'cosign location':
         ensure => present,
         path   => "${apache::params::root}/${vhost_name}/conf",
-        configuration => "
-        <Location /cosign/valid>
-             SetHandler cosign
-             CosignProtected off
-             Allow from all
-             Satisfy any
-             CosignHostname weblogin.pennkey.upenn.edu
-             CosignCrypto ${ssl_dir}/${full_identifier}.key ${ssl_dir}/${full_identifier}.crt ${ca_dir}
-             CosignValidReference          https://${vhost_name}/.*
-             CosignValidationErrorRedirect http://weblogin.pennkey.upenn.edu/validation_error.html
-        </Location>
-        ",
+        configuration => template($location_config_template),
     }
 }

@@ -1,0 +1,10 @@
+<Location /cosign/valid>
+     SetHandler cosign
+     CosignProtected off
+     Allow from all
+     Satisfy any
+     CosignHostname weblogin.pennkey.upenn.edu
+     CosignCrypto <%= ssl_dir}/${full_identifier}.key ${ssl_dir}/${full_identifier}.crt ${ca_dir %>
+     CosignValidReference          https://<%= vhost_name %>/.*
+     CosignValidationErrorRedirect http://weblogin.pennkey.upenn.edu/validation_error.html
+</Location>
