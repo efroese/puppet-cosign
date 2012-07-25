@@ -18,8 +18,9 @@ class cosign::apache(
     $crt_file,
     $ca_cert_pem_file,
     $vhost_name,
+    $mod_cosign_source,
     $vhost_config_template    = 'cosign/vhost_config.erb',
-    $location_config_template = 'cosign/location_config.erb'){
+    $location_config_template = 'cosign/location_config.erb',){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
     
@@ -94,7 +95,7 @@ class cosign::apache(
 
     # Extract /var/lib/cosign/domain-string-int.zip -> 
     # /var/lib/cosign/domain-string-int 
-    archive::extract { $full_identifier:
+    archive::extract { $mod_cosign_source:
         target     => $cosign::params::source,
         src_target => $cosign::params::source,
         extension  => 'tgz',
@@ -104,17 +105,17 @@ class cosign::apache(
 
     exec { 'configure-cosign-module':
         command     => $::operatingsystem ? {
-            /RedHat|CentOS|Amazon/ => "${cosign::params::source}/${full_identifier}/configure --enable-apache2=/usr/sbin/apxs",
-            /Debian|Ubuntu/        => "${cosign::params::source}/${full_identifier}/configure --enable-apache2=/usr/sbin/apxs2",
+            /RedHat|CentOS|Amazon/ => "${cosign::params::source}/${mod_cosign_source}/configure --enable-apache2=/usr/sbin/apxs",
+            /Debian|Ubuntu/        => "${cosign::params::source}/${mod_cosign_source}/configure --enable-apache2=/usr/sbin/apxs2",
         },
-        cwd         => "${cosign::params::source}/${full_identifier}",
+        cwd         => "${cosign::params::source}/${mod_cosign_source}",
         refreshonly => true,
         notify      => Exec['install-cosign-module']
     }
 
     exec { 'install-cosign-module':
         command     => "make && make install",
-        cwd         => "${cosign::params::source}/${full_identifier}",
+        cwd         => "${cosign::params::source}/${mod_cosign_source}",
         refreshonly => true,
     }
 
