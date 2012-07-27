@@ -35,7 +35,7 @@ class cosign::apache(
     $ca_dir          = "${apache::params::conf}/cosign-ca"
     $ssl_dir         = "${apache::params::conf}/cosign-ssl"
 
-    $escaped_url      = regsubst("https://${vhost_name}", '([\/\.])', '\\\1', 'G')
+    $escaped_url      = regsubst("https://${vhost_name}", '([\.])', '\\\1', 'G')
     $valid_reference = "${escaped_url}/.*"
 
     file { [ $ca_dir, $ssl_dir, ]:
