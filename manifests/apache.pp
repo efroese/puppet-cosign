@@ -20,7 +20,7 @@ class cosign::apache(
     $vhost_name,
     $mod_cosign_source,
     $vhost_config_template    = 'cosign/vhost_config.erb',
-    $location_config_template = 'cosign/location_config.erb',){
+    $location_config_template = 'cosign/location_config.erb'){
 
     Class['Cosign::Params'] -> Class['Cosign::Apache']
     
@@ -35,7 +35,8 @@ class cosign::apache(
     $ca_dir          = "${apache::params::conf}/cosign-ca"
     $ssl_dir         = "${apache::params::conf}/cosign-ssl"
 
-    $valid_reference = regsubst("https://${vhost_name}", '([\/\.])', '\\\1', 'G')
+    $escaped_url      = regsubst("https://${vhost_name}", '([\/\.])', '\\\1', 'G')
+    $valid_reference = "${escaped_url}/.*"
 
     file { [ $ca_dir, $ssl_dir, ]:
         ensure => directory,

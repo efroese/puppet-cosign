@@ -5,6 +5,6 @@
      Satisfy                        any
      CosignHostname                 weblogin.pennkey.upenn.edu
      CosignCrypto                   <%= ssl_dir %>/<%= full_identifier %>.key <%= ssl_dir %>/<%= full_identifier %>.crt <%= ca_dir %>
-     CosignValidReference           <%= valid_reference %>/.*
+     CosignValidReference           <%= valid_reference %>
      CosignValidationErrorRedirect  http://weblogin.pennkey.upenn.edu/validation_error.html
 </Location>
