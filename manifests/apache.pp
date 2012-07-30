@@ -34,6 +34,7 @@ class cosign::apache(
     $full_identifier = "${domain}-${identifier}-${issuance_integer}"
     $ca_dir          = "${apache::params::conf}/cosign-ca"
     $ssl_dir         = "${apache::params::conf}/cosign-ssl"
+    $cache_dir       = '/var/cache/cosign'
 
     $host            = regsubst($vhost_name, ':\d+$', '')
     $escaped_url     = regsubst("https://${host}", '([\.])', '\\\1', 'G')
@@ -75,7 +76,7 @@ class cosign::apache(
         refreshonly => true,
     }
 
-    file { '/var/cache/cosign':
+    file { $cache_dir:
         ensure => directory,
         owner  => $apache::user,
         group  => $apache::group,
@@ -85,14 +86,14 @@ class cosign::apache(
         ensure => directory,
         owner  => $apache::user,
         group  => $apache::group,
-        require => File['/var/cache/cosign'],
+        require => File[$cache_dir],
     }
 
     file { $cosign::params::source:
         ensure => directory,
         owner  => $apache::user,
         group  => $apache::group,
-        require => File['/var/cache/cosign'],
+        require => File[$cache_dir],
     }
 
     # Extract /var/lib/cosign/domain-string-int.zip -> 
@@ -145,5 +146,12 @@ class cosign::apache(
         ensure => present,
         path   => "${apache::params::root}/${vhost_name}/conf",
         configuration => template($location_config_template),
+    }
+
+    cron { 'cosign-session-cleanup':
+        ensure  => present,
+        minute  => 13,
+        hour    => 0,
+        command => "find ${cache_dir} -type f -mtime +1 | xargs rm -f",
     }
 }
