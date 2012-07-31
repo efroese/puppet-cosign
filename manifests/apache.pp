@@ -1,19 +1,55 @@
 #
-# Class: cosign::apache
+# == Class: cosign::apache
 # Build and install the cosign apache module.
 #
-# Parameters:
+# === Parameters
 #
-# $domain               The cosign domain for this install
-# $identifier           The Specified string for the cosign install
-# $issuance integer     The cosign issuance identifier
-# $key_file             Your cosign key
-# $crt_file             Your cosign certificate
-# $vhost_name           The name of the apache::vhost[-ssl] to activate cosign in
-# $mod_cosign_source    The name of the source tarball
-# $vhost_config_template An optional template for the cosign base vhost config 
-# $location_config_template An optional template for the /cosign/valid configuration.
+# [*domain*]
+#		The cosign domain for this install
+# [*identifier*]
+#		The Specified string for the cosign install
+# [*issuance_integer*]
+#		The cosign issuance identifier
+# [*key_file*]
+#		Your cosign key
+# [*crt_file*]
+#		Your cosign certificate
+# [*vhost_name*]
+#		The name of the apache::vhost[-ssl] to activate cosign in
+# [*mod_cosign_source*]
+#		The name of the source tarball
+# [*vhost_config_template*]
+#		An optional template for the cosign base vhost config
+# [*location_config_template*]
+#		An optional template for the /cosign/valid configuration.
 # 
+# === Examples
+# First copy your source to /var/cache/cosign/source
+# For this example we'll use /var/cache/cosign/source/cosign3-090824-2.tgz
+#
+# class { 'cosign::apache':
+#    domain            => 'test',
+#    identifier        => 'app0,
+#    issuance_integer  => 2,
+#    key_file          => 'puppet:///modules/site/test-app0-2.key',
+#    crt_file          => 'puppet:///modules/site/test-app0-2.crt',
+#    ca_cert_pem_file  => 'puppet:///modules/site/cosign-int.pem',
+#    vhost_name        => 'cosign.protected.example.edu:443',
+#    mod_cosign_source => 'cosign3-090824-2,
+# }
+#
+# apache::conf { 'cosign protection':
+#    ensure => present,
+#    path   => "${apache::params::root}/cosign.protected.example.edu:443/conf",
+#    configuration => "
+#    <Location /app0/authentication >
+#        CosignProtected On
+#        AuthType Cosign
+#        Require valid-user
+#        CosignRequireFactor   UPENN.EDU
+#    </Location>",
+# }
+
 class cosign::apache(
     $domain,
     $identifier,
