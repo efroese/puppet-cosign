@@ -6,7 +6,7 @@
 # 
 class cosign::proxy_http(
     $vhost_name,
-    $header_name='Proxy-Header') { 
+    $header_name='Proxy-User') { 
 
     Class['Cosign::Params'] -> Class['Cosign::Proxy_http']
     
