@@ -1,14 +1,18 @@
 #
-# = Class cosign::apache
+# Class: cosign::apache
 # Build and install the cosign apache module.
 #
-# = Parameters
+# Parameters:
 #
 # $domain               The cosign domain for this install
 # $identifier           The Specified string for the cosign install
 # $issuance integer     The cosign issuance identifier
 # $key_file             Your cosign key
 # $crt_file             Your cosign certificate
+# $vhost_name           The name of the apache::vhost[-ssl] to activate cosign in
+# $mod_cosign_source    The name of the source tarball
+# $vhost_config_template An optional template for the cosign base vhost config 
+# $location_config_template An optional template for the /cosign/valid configuration.
 # 
 class cosign::apache(
     $domain,
