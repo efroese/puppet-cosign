@@ -11,13 +11,8 @@ class cosign::proxy_http(
     Class['Cosign::Params'] -> Class['Cosign::Proxy_http']
     
     apache::conf { "cosign mod proxy remote user passthrough":
-        ensure => present,
-        path   => "${apache::params::root}/${vhost_name}/conf",
-        configuration => "
-        # managed by puppet
-        RewriteEngine On
-        RewriteRule .* - [E=PROXY_USER:%{LA-U:REMOTE_USER}]
-        RequestHeader set ${header_name} %{PROXY_USER}e env=PROXY_USER
-        ",
+        ensure       => present,
+        path          => "${apache::params::root}/${vhost_name}/conf",
+        configuration => template('cosign/proxy_http_fix.erb'),
     }
 }

@@ -1,0 +1,4 @@
+# managed by puppet
+RewriteEngine On
+RewriteRule .* - [E=PROXY_USER:%{LA-U:REMOTE_USER}]
+RequestHeader set <%= header_name %> %{PROXY_USER}e env=PROXY_USER
