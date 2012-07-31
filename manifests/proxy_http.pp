@@ -16,8 +16,8 @@ class cosign::proxy_http(
         configuration => "
         # managed by puppet
         RewriteEngine On
-        RewriteRule .* - [E=PROXY_USER:%{LA-U:REMOTE_USER}] # note mod_rewrite's lookahead option
-        RequestHeader set Proxy-User %{${header_name}}e
+        RewriteRule .* - [E=PROXY_USER:%{LA-U:REMOTE_USER}]
+        RequestHeader set ${header_name} %{PROXY_USER}e env=PROXY_USER
         ",
     }
 }
